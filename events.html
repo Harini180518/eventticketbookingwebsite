@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - Event Ticket Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Event Listings</h1>
+        <nav>
+            <a href="dashboard.html">Home</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="logout.html">Logout</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="filters">
+            <label for="location-filter">Filter by Location:</label>
+            <select id="location-filter">
+                <option value="">All Locations</option>
+            </select>
+            
+            <label for="category-filter">Filter by Event Type:</label>
+            <select id="category-filter">
+                <option value="">All Categories</option>
+            </select>
+            
+            <button onclick="renderEvents()">Search</button>
+        </section>
+        
+        <section id="event-list">
+            <!-- Events will be populated dynamically -->
+        </section>
+    </main>
+
+    <script>
+        const cart = [];
+        const events = Array.from({ length: 10 }, (_, i) => ({
+            id: i + 1,
+            name: ["Rock Concert", "Tech Expo", "Food Carnival", "Sports Championship", "Art Exhibition", "Jazz Night", "Coding Hackathon", "Gourmet Fest", "Marathon Race", "Theater Play"][i],
+            date: `2025-${String(i % 12 + 1).padStart(2, '0')}-15`,
+            startTime: `${i % 12 + 1}:00 PM`,
+            endTime: `${(i % 12 + 2) % 12 + 1}:00 PM`,
+            location: ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"][i],
+            category: ["Music", "Technology", "Food", "Sports", "Art", "Music", "Technology", "Food", "Sports", "Art"][i],
+            price: (i + 1) * 10,
+            tickets: 100 - i * 2,
+            rescheduleDates: [`2025-${String(i % 12 + 1).padStart(2, '0')}-20`, `2025-${String(i % 12 + 1).padStart(2, '0')}-25`]
+        }));
+
+        function populateFilters() {
+            const locationFilter = document.getElementById("location-filter");
+            const categoryFilter = document.getElementById("category-filter");
+            
+            const locations = [...new Set(events.map(event => event.location))];
+            const categories = [...new Set(events.map(event => event.category))];
+            
+            locations.forEach(location => {
+                let option = document.createElement("option");
+                option.value = location;
+                option.textContent = location;
+                locationFilter.appendChild(option);
+            });
+            
+            categories.forEach(category => {
+                let option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function renderEvents() {
+            const eventContainer = document.getElementById('event-list');
+            eventContainer.innerHTML = '';
+            
+            const selectedLocation = document.getElementById("location-filter").value;
+            const selectedCategory = document.getElementById("category-filter").value;
+            
+            const filteredEvents = events.filter(event => 
+                (!selectedLocation || event.location === selectedLocation) &&
+                (!selectedCategory || event.category === selectedCategory)
+            );
+            
+            filteredEvents.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.innerHTML = `
+                    <h2>${event.name}</h2>
+                    <p><strong>Date:</strong> <span id="date-${event.id}">${event.date}</span></p>
+                    <p><strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
+                    <p><strong>Location:</strong> ${event.location}</p>
+                    <p><strong>Category:</strong> ${event.category}</p>
+                    <p><strong>Price:</strong> $${event.price} per ticket</p>
+                    <label><strong>Quantity:</strong> 
+                        <input type="number" id="quantity-${event.id}" min="1" max="${event.tickets}" value="1">
+                    </label>
+                    <button onclick="bookTicket(${event.id})">Book Now</button>
+                    <button onclick="toggleReschedule(${event.id})">Reschedule Ticket</button>
+                    <div id="reschedule-options-${event.id}" style="display: none;">
+                        <label for="reschedule-${event.id}"><strong>Select a new date:</strong></label>
+                        <select id="reschedule-${event.id}">
+                            ${event.rescheduleDates.map(date => `<option value="${date}">${date}</option>`).join("")}
+                        </select>
+                        <button onclick="confirmReschedule(${event.id})">Confirm</button>
+                    </div>
+                `;
+                eventContainer.appendChild(eventItem);
+            });
+        }
+
+        function bookTicket(eventId) {
+            let selectedEvent = events.find(event => event.id === eventId);
+            let quantity = parseInt(document.getElementById(`quantity-${eventId}`).value);
+            
+            if (!selectedEvent) {
+                alert("Event not found.");
+                return;
+            }
+
+            if (selectedEvent.tickets < quantity) {
+                alert("Not enough tickets available.");
+                return;
+            }
+
+            localStorage.setItem("selectedEvent", JSON.stringify({ event: selectedEvent, quantity }));
+            window.location.href = "checkout.html";
+        }
+
+        function toggleReschedule(eventId) {
+            let rescheduleDiv = document.getElementById(`reschedule-options-${eventId}`);
+            rescheduleDiv.style.display = (rescheduleDiv.style.display === "block") ? "none" : "block";
+        }
+
+        function confirmReschedule(eventId) {
+            let newDate = document.getElementById(`reschedule-${eventId}`).value;
+            document.getElementById(`date-${eventId}`).textContent = newDate;
+            alert(`Your ticket for ${events.find(event => event.id === eventId).name} has been rescheduled to ${newDate}.`);
+        }
+
+        window.onload = () => {
+            populateFilters();
+            renderEvents();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Checkout</h1>
+        <nav>
+            <a href="dashboard.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="contact.html">Contact Us</a>
+            <a href="logout.html">Logout</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="checkout-section">
+            <h2>Choose Payment Method</h2>
+            <p>Selected Event: <span id="selected-event-name"></span></p>
+            <p>Quantity: <span id="selected-event-quantity"></span></p>
+            <p>Total Price: <span id="selected-event-price"></span></p>
+            <form id="checkoutForm">
+                <label>
+                    <input type="radio" name="paymentMethod" value="creditCard" required> Credit Card
+                </label>
+                
+                <label>
+                    <input type="radio" name="paymentMethod" value="debitcard" required> Debit Card
+                </label>
+                
+                <button type="submit">Proceed to Payment</button>
+            </form>
+        </section>
+    </main>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Retrieve event details from local storage
+            let eventName = localStorage.getItem("selectedEventName");
+            let eventPrice = localStorage.getItem("selectedEventPrice");
+            let eventQuantity = localStorage.getItem("selectedEventQuantity");
+
+            if (!eventName || !eventPrice || !eventQuantity) {
+                document.getElementById("checkout-section").innerHTML = "<p>No event selected. Please go back and choose an event.</p>";
+                return;
+            }
+
+            let totalPrice = (parseFloat(eventPrice) * parseInt(eventQuantity)).toFixed(2);
+
+            document.getElementById("selected-event-name").textContent = eventName;
+            document.getElementById("selected-event-price").textContent = "$" + totalPrice;
+            document.getElementById("selected-event-quantity").textContent = eventQuantity;
+
+            document.getElementById("checkoutForm").addEventListener("submit", function (event) {
+                event.preventDefault();
+                window.location.href = "payments.html";
+            });
+        });
+    </script>
+</body>
+</html>
